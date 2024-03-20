@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "strict": true,
+
+    // should be here - otherwise IDE cannot suggest in imports
+    "paths": {
+      "@nestjs-orm/core": [
+        "libs/@nestjs-orm/core/src"
+      ],
+      "@nestjs-orm/core/*": [
+        "libs/@nestjs-orm/core/src/*"
+      ],
+      "@nestjs-orm/client": [
+        "libs/@nestjs-orm/client/src"
+      ],
+      "@nestjs-orm/client/*": [
+        "libs/@nestjs-orm/client/src/*"
+      ]
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/nestjs-orm-sandbox/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/nestjs-orm-sandbox/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/nestjs-orm-sandbox",
+  "projects": {
+    "nestjs-orm-sandbox": {
+      "type": "application",
+      "root": "apps/nestjs-orm-sandbox",
+      "entryFile": "main",
+      "sourceRoot": "apps/nestjs-orm-sandbox/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/nestjs-orm-sandbox/tsconfig.app.json"
+      }
+    },
+    "@nestjs-orm/core": {
+      "type": "library",
+      "root": "libs/@nestjs-orm/core",
+      "entryFile": "index",
+      "sourceRoot": "libs/@nestjs-orm/core/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/@nestjs-orm/core/tsconfig.lib.json"
+      }
+    },
+    "@nestjs-orm/client": {
+      "type": "library",
+      "root": "libs/@nestjs-orm/client",
+      "entryFile": "index",
+      "sourceRoot": "libs/@nestjs-orm/client/src",
+      "compilerOptions": {
+        "webpack": false,
+        "tsConfigPath": "libs/@nestjs-orm/client/tsconfig.lib.json",
+        "builder": {
+          "type": "tsc"
+        }
+      }
+    }
+  }
+}

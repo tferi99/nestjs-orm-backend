@@ -1,0 +1,63 @@
+// loading .env
+import { config } from 'dotenv';
+config({
+  path: '.env-test',
+}); // it should be called after importing .env
+
+import { Test, TestingModule } from '@nestjs/testing';
+import { HttpStatus, INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { AppModule } from '../../src/app.module';
+import { APP_WELCOME } from '../../src/app.controller';
+import { LoginResult } from '../../src/auth/model/auth.model';
+import { testAdminCredentials, badCredentials } from '../data/creadentials';
+
+describe('App (e2e)', () => {
+  let app: INestApplication;
+  let jwtToken = '';
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('Initial request "/"', () => {
+    return request(app.getHttpServer()).get('/').expect(200).expect(APP_WELCOME);
+  });
+
+  describe('Authentication', () => {
+    it('Login failed', async () => {
+      // EITHER return request OR call with await
+      const res = await request(app.getHttpServer()).post('/auth/login').send(badCredentials).expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.access_token).not.toBeDefined();
+    });
+
+    it('Admin login OK', async () => {
+      const res = await request(app.getHttpServer()).post('/auth/login').send(testAdminCredentials).expect(HttpStatus.CREATED);
+      const data = res.body as LoginResult;
+      jwtToken = data.access_token;
+      console.log('JWR Token: ' + jwtToken);
+    });
+  });
+
+  describe('Authorized REST requests', () => {
+    it('Client DEV test failed', () => {
+      return request(app.getHttpServer())
+        .get('/client/dev')
+        .set('Authorization', `Bearer ${jwtToken + 'x'}`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('Client DEV test', () => {
+      console.log('TOKEN NOW: ' + jwtToken);
+      return request(app.getHttpServer())
+        .get('/client/dev')
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .expect(HttpStatus.OK);
+    });
+  });
+});

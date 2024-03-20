@@ -1,0 +1,58 @@
+import * as request from 'supertest';
+import { APP_WELCOME } from '../../src/app.controller';
+import { testAdminCredentials, badCredentials } from '../data/creadentials';
+import { HttpStatus } from '@nestjs/common';
+import { loginForTests } from '../common';
+import { BASE_URL } from '../config';
+import jwt_decode from 'jwt-decode';
+import { JwtPayload } from '@app/client-lib';
+
+/**
+ * This approach requires a running server on BASE_URL.
+ */
+
+describe('Texting with only-cient approach', () => {
+  let jwtToken = '';
+
+  beforeAll(async () => {
+    jwtToken = await loginForTests(testAdminCredentials);
+  });
+
+  it('Initial request "/"', () => {
+    return request(BASE_URL).get('/').expect(200).expect(APP_WELCOME);
+  });
+
+  describe('Authentication', () => {
+    it('Login failed', async () => {
+      const res = await request(BASE_URL).post('/auth/login').send(badCredentials).expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.access_token).not.toBeDefined();
+    });
+
+    it('Admin login OK', async () => {
+      const res = await request(BASE_URL)
+        .post('/auth/login')
+        .send(testAdminCredentials)
+        .expect(HttpStatus.CREATED)
+        .expect((response: request.Response) => {
+          const { access_token } = response.body;
+          expect(typeof access_token).toBe('string');
+
+          const payload: JwtPayload = jwt_decode(access_token);
+          expect(payload.username).toEqual(testAdminCredentials.username);
+        });
+    });
+  });
+
+  describe('Authorized REST requests', () => {
+    it('Client DEV test failed', () => {
+      return request(BASE_URL)
+        .get('/client/dev')
+        .set('Authorization', `Bearer ${jwtToken + 'x'}`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('Client DEV test', () => {
+      return request(BASE_URL).get('/client/dev').set('Authorization', `Bearer ${jwtToken}`).expect(HttpStatus.OK);
+    });
+  });
+});
